@@ -78,6 +78,92 @@
     .btn-primary:active { transform: scale(0.98); }
     .auth-err { color: #f87171; font-size: 13px; margin-top: 10px; min-height: 18px; }
 
+    /* Mandatory Legal NDA Clickwrap & Signature Gate */
+    #ndaScreen {
+      display: none; position: fixed; inset: 0; z-index: 250;
+      background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.16), transparent 55%), rgba(5, 8, 15, 0.97);
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 18px 14px calc(28px + env(safe-area-inset-bottom));
+    }
+    #ndaScreen.active { display: block; }
+    .nda-card {
+      width: 100%; max-width: 780px; margin: 0 auto;
+      background: var(--bg-1); border: 1px solid rgba(16, 185, 129, 0.38);
+      border-radius: 20px; padding: 22px 22px 24px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.78);
+    }
+    .nda-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fcd34d; font-size: 11px; font-weight: 800; letter-spacing: 0.6px;
+      padding: 4px 10px; border-radius: 99px; margin-bottom: 10px; text-transform: uppercase;
+    }
+    .nda-card h2 { font-size: 17.5px; font-weight: 800; line-height: 1.3; margin-bottom: 4px; color: #fff; }
+    .nda-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.45; }
+    .nda-doc-box {
+      max-height: 270px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      background: #070b13; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 15px; margin-bottom: 14px; font-size: 12.6px; line-height: 1.56; color: #cbd5e1;
+    }
+    .nda-doc-box h4 { color: #f8fafc; font-size: 13px; margin: 12px 0 4px; }
+    .nda-doc-box h4:first-child { margin-top: 0; }
+    .nda-doc-box p { margin-bottom: 8px; text-align: left; }
+    .nda-check-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 11px; padding: 10px 12px; margin-bottom: 9px; cursor: pointer;
+      font-size: 12.5px; line-height: 1.42; color: #e2e8f0;
+    }
+    .nda-check-row input[type="checkbox"] {
+      width: 19px; height: 19px; margin-top: 2px; accent-color: var(--emerald); flex-shrink: 0; cursor: pointer;
+    }
+    .nda-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;
+    }
+    @media (max-width: 640px) {
+      .nda-card { padding: 16px 14px 20px; }
+      .nda-grid { grid-template-columns: 1fr; }
+      .nda-doc-box { max-height: 220px; }
+    }
+    .nda-field label {
+      display: block; font-size: 11.5px; font-weight: 700; color: var(--muted);
+      margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .nda-input {
+      width: 100%; padding: 11px 13px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--bg-0); color: #fff;
+      font-size: 14.5px; font-weight: 600; outline: none;
+    }
+    .nda-input:focus { border-color: var(--emerald); }
+    .sig-pad-wrap {
+      margin-top: 12px;
+    }
+    .sig-pad-head {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;
+    }
+    .sig-pad-head label {
+      font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .sig-canvas-box {
+      background: #ffffff; border: 2px solid #94a3b8; border-radius: 12px;
+      position: relative; height: 138px; overflow: hidden;
+    }
+    .sig-canvas-box.signed { border-color: var(--emerald); }
+    #ndaSigCanvas {
+      width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair;
+    }
+    .sig-baseline {
+      position: absolute; left: 16px; right: 16px; bottom: 26px;
+      border-bottom: 1px dashed #cbd5e1; pointer-events: none;
+      font-size: 10px; color: #94a3b8; padding-bottom: 2px;
+    }
+    .btn-sign {
+      width: 100%; margin-top: 14px; padding: 14px 18px; border: none; border-radius: 13px;
+      background: linear-gradient(135deg, var(--emerald), #059669);
+      color: #022c22; font-weight: 800; font-size: 15px; cursor: pointer;
+    }
+    .btn-sign:disabled { opacity: 0.5; cursor: not-allowed; }
+
     /* App Shell */
     #appShell { display: none; height: 100%; width: 100%; }
     #appShell.ready { display: flex; }
@@ -322,6 +408,55 @@
     </div>
   </div>
 
+  <!-- Mandatory Legal NDA & Electronic Signature Gate -->
+  <div id="ndaScreen">
+    <div class="nda-card">
+      <div class="nda-pill">⚖️ Mandatory Legal Agreement • Action Required</div>
+      <h2 id="ndaTitleEl">CONFIDENTIALITY, NON-DISCLOSURE, IP ASSIGNMENT &amp; SYSTEM ACCESS AGREEMENT</h2>
+      <div class="nda-sub">
+        Protected Principals: <b>Adriano Daniele-Franco Vagnini</b>, <b>Joshua Dinverno</b> &amp; <b>Dinverno Remodeling and Construction Inc.</b> (+1 (248) 431-4609)<br/>
+        Please review all terms below, check both boxes, type your full legal name, and sign to unlock your workspace.
+      </div>
+
+      <div class="nda-doc-box" id="ndaDocBody"></div>
+
+      <label class="nda-check-row">
+        <input type="checkbox" id="ndaChkTerms" />
+        <span>I have read, understand, and agree to be legally bound by all terms of this <b>Confidentiality, Non-Disclosure, IP Assignment &amp; System Access Agreement</b>, including 100% exclusive work-made-for-hire IP ownership, 24-month client/lead non-diversion, and real-time workspace monitoring.</span>
+      </label>
+
+      <label class="nda-check-row">
+        <input type="checkbox" id="ndaChkEsign" />
+        <span>I consent to electronic execution under the Federal ESIGN Act (15 U.S.C. § 7001) &amp; Michigan UETA (MCL 450.831) and adopt my typed legal name and drawn signature below as my binding legal signature, with an executed PDF copy archived for both parties.</span>
+      </label>
+
+      <div class="nda-grid">
+        <div class="nda-field">
+          <label for="ndaTypedName">Full Legal Name (Required)</label>
+          <input id="ndaTypedName" class="nda-input" type="text" placeholder="Michael Marinucci Jr." autocomplete="name" />
+        </div>
+        <div class="nda-field">
+          <label for="ndaEmail">Work / Contact Email</label>
+          <input id="ndaEmail" class="nda-input" type="email" value="mikejr.dinverno@gmail.com" autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="sig-pad-wrap">
+        <div class="sig-pad-head">
+          <label>Draw Your Live Signature (Finger, Stylus, or Mouse)</label>
+          <button type="button" class="mini-btn" id="clearSigBtn" style="margin:0;">Clear Signature</button>
+        </div>
+        <div class="sig-canvas-box" id="sigCanvasBox">
+          <div class="sig-baseline">✕ Sign Above</div>
+          <canvas id="ndaSigCanvas"></canvas>
+        </div>
+      </div>
+
+      <div class="auth-err" id="ndaErr" style="text-align:left;margin-top:8px;"></div>
+      <button type="button" class="btn-sign" id="submitNdaBtn">✍️ Sign Agreement &amp; Unlock DRC Antigravity</button>
+    </div>
+  </div>
+
   <!-- Main Workspace -->
   <div id="appShell">
     <div class="drawer-backdrop" id="backdrop"></div>
@@ -343,8 +478,9 @@
       </div>
       <div class="sb-scroll" id="sbContent"></div>
       <div class="sb-foot">
-        <span>DRC Sales Sandbox Active</span>
-        <button class="mini-btn" id="lockBtn">Lock</button>
+        <a id="myNdaLink" href="#" target="_blank" style="color:#6ee7b7;text-decoration:none;font-weight:700;display:none;" title="Download your signed NDA PDF">⚖️ Signed NDA PDF ↗</a>
+        <span id="sandboxLbl">DRC Sales Sandbox</span>
+        <button class="mini-btn" id="lockBtn" style="margin:0;">Lock</button>
       </div>
     </aside>
 
@@ -453,8 +589,178 @@
       }
       const resp = await fetch(`${state.apiBase}${path}`, { ...opts, headers });
       const data = await resp.json().catch(() => ({}));
+      if (resp.status === 403 && data.nda_required) {
+        state.ndaLocked = true;
+        document.getElementById('appShell').classList.remove('ready');
+        await loadAndShowNdaGate();
+        throw new Error('Please review and sign the Confidentiality & IP Agreement to continue.');
+      }
       if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
       return data;
+    }
+
+    // --- Live Electronic Signature Pad (Mouse + Touch + Apple Pencil) ---
+    let sigCtx = null;
+    let sigDrawing = false;
+    let sigStrokeCount = 0;
+
+    function initSignaturePad() {
+      const canvas = document.getElementById('ndaSigCanvas');
+      if (!canvas) return;
+      const box = document.getElementById('sigCanvasBox');
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const rect = box.getBoundingClientRect();
+      const w = Math.max(280, Math.floor(rect.width || 620));
+      const h = Math.max(120, Math.floor(rect.height || 138));
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      sigCtx = canvas.getContext('2d');
+      sigCtx.scale(dpr, dpr);
+      sigCtx.lineCap = 'round';
+      sigCtx.lineJoin = 'round';
+      sigCtx.lineWidth = 2.6;
+      sigCtx.strokeStyle = '#0f172a';
+      sigStrokeCount = 0;
+      box.classList.remove('signed');
+
+      if (!canvas.dataset.bound) {
+        canvas.dataset.bound = '1';
+        const pt = (ev) => {
+          const r = canvas.getBoundingClientRect();
+          return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+        };
+        canvas.addEventListener('pointerdown', (ev) => {
+          ev.preventDefault();
+          canvas.setPointerCapture(ev.pointerId);
+          sigDrawing = true;
+          const p = pt(ev);
+          sigCtx.beginPath();
+          sigCtx.moveTo(p.x, p.y);
+          sigCtx.lineTo(p.x + 0.1, p.y + 0.1);
+          sigCtx.stroke();
+          sigStrokeCount++;
+          document.getElementById('sigCanvasBox').classList.add('signed');
+        });
+        canvas.addEventListener('pointermove', (ev) => {
+          if (!sigDrawing) return;
+          ev.preventDefault();
+          const p = pt(ev);
+          sigCtx.lineTo(p.x, p.y);
+          sigCtx.stroke();
+          sigStrokeCount++;
+        });
+        const stop = (ev) => {
+          if (!sigDrawing) return;
+          sigDrawing = false;
+          try { canvas.releasePointerCapture(ev.pointerId); } catch (_) {}
+        };
+        canvas.addEventListener('pointerup', stop);
+        canvas.addEventListener('pointercancel', stop);
+      }
+    }
+
+    function clearSignaturePad() {
+      const canvas = document.getElementById('ndaSigCanvas');
+      if (!canvas || !sigCtx) return;
+      sigCtx.save();
+      sigCtx.setTransform(1, 0, 0, 1, 0, 0);
+      sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+      sigCtx.restore();
+      sigStrokeCount = 0;
+      document.getElementById('sigCanvasBox').classList.remove('signed');
+    }
+
+    async function loadAndShowNdaGate() {
+      const resp = await fetch(`${state.apiBase}/api/rep/nda-status`, {
+        headers: { 'x-access-pin': state.pin }
+      });
+      const info = await resp.json();
+      if (info.signed) {
+        state.ndaLocked = false;
+        document.getElementById('ndaScreen').classList.remove('active');
+        document.getElementById('appShell').classList.add('ready');
+        await refreshBootstrap();
+        renderWelcomeOrActiveChat();
+        return;
+      }
+      state.ndaLocked = true;
+      document.getElementById('ndaTitleEl').textContent = info.nda_title || 'CONFIDENTIALITY, NON-DISCLOSURE, IP ASSIGNMENT & SYSTEM ACCESS AGREEMENT';
+      const docEl = document.getElementById('ndaDocBody');
+      docEl.innerHTML = (info.sections || []).map(s => `
+        <h4>${esc(s.heading)}</h4>
+        <p>${esc(s.body)}</p>
+      `).join('') + `
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);">
+          Agreement Version: <b>${esc(info.nda_version)}</b> • Canonical Text SHA-256: <code>${esc((info.text_sha256 || '').slice(0, 32))}…</code>
+        </div>
+      `;
+      if (info.rep_email && !document.getElementById('ndaEmail').value) {
+        document.getElementById('ndaEmail').value = info.rep_email;
+      }
+      document.getElementById('ndaErr').textContent = '';
+      document.getElementById('ndaScreen').classList.add('active');
+      requestAnimationFrame(() => initSignaturePad());
+    }
+
+    async function submitNdaSignature() {
+      const errEl = document.getElementById('ndaErr');
+      const btn = document.getElementById('submitNdaBtn');
+      errEl.textContent = '';
+
+      const agreedTerms = document.getElementById('ndaChkTerms').checked;
+      const agreedEsign = document.getElementById('ndaChkEsign').checked;
+      const typedName = document.getElementById('ndaTypedName').value.trim();
+      const email = document.getElementById('ndaEmail').value.trim();
+
+      if (!agreedTerms || !agreedEsign) {
+        errEl.textContent = '⚠️ Please check both legal consent boxes above before signing.';
+        return;
+      }
+      if (typedName.length < 5 || !typedName.includes(' ')) {
+        errEl.textContent = '⚠️ Please type your full legal first and last name (Michael Marinucci Jr.).';
+        document.getElementById('ndaTypedName').focus();
+        return;
+      }
+      if (sigStrokeCount < 6) {
+        errEl.textContent = '⚠️ Please draw your signature inside the white signature box above.';
+        return;
+      }
+
+      const canvas = document.getElementById('ndaSigCanvas');
+      const sigDataUrl = canvas.toDataURL('image/png');
+
+      btn.disabled = true;
+      btn.textContent = 'Generating Sealed Legal PDF & Unlocking…';
+      try {
+        const resp = await fetch(`${state.apiBase}/api/rep/nda-sign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-access-pin': state.pin
+          },
+          body: JSON.stringify({
+            typed_name: typedName,
+            email,
+            agreed_terms: agreedTerms,
+            agreed_esign: agreedEsign,
+            signature_data_url: sigDataUrl
+          })
+        });
+        const res = await resp.json().catch(() => ({}));
+        if (!resp.ok || !res.success) throw new Error(res.error || 'Could not record signature');
+
+        state.ndaLocked = false;
+        state.justSignedCert = res;
+        document.getElementById('ndaScreen').classList.remove('active');
+        document.getElementById('appShell').classList.add('ready');
+        await refreshBootstrap();
+        renderWelcomeOrActiveChat();
+      } catch (e) {
+        errEl.textContent = '⚠️ ' + (e.message || 'Signature submission failed');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✍️ Sign Agreement & Unlock DRC Antigravity';
+      }
     }
 
     async function tryUnlock(pin) {
@@ -478,6 +784,13 @@
         sessionStorage.setItem(STORAGE_PIN_KEY, pin);
         localStorage.setItem(STORAGE_API_KEY, base);
         document.getElementById('authScreen').style.display = 'none';
+
+        if (!loginData.nda_signed) {
+          await loadAndShowNdaGate();
+          return;
+        }
+
+        state.ndaLocked = false;
         document.getElementById('appShell').classList.add('ready');
         await refreshBootstrap();
         renderWelcomeOrActiveChat();
@@ -494,6 +807,17 @@
       state.conversations = data.conversations || [];
       state.artifacts = data.artifacts || [];
       state.meshTickets = data.mesh_tickets || [];
+      state.activeNda = data.active_nda || null;
+      const ndaLink = document.getElementById('myNdaLink');
+      const sbLbl = document.getElementById('sandboxLbl');
+      if (state.activeNda && state.activeNda.download_url) {
+        ndaLink.href = `${state.apiBase}${state.activeNda.download_url}?pin=${encodeURIComponent(state.pin)}`;
+        ndaLink.style.display = 'inline-block';
+        if (sbLbl) sbLbl.style.display = 'none';
+      } else {
+        ndaLink.style.display = 'none';
+        if (sbLbl) sbLbl.style.display = 'inline';
+      }
       const badge = document.getElementById('meshBadge');
       if (data.pending_mesh_count > 0) {
         badge.style.display = 'inline-block';
@@ -590,8 +914,18 @@
       if (state.activeConvId) return;
       document.getElementById('chatHeaderTitle').textContent = 'DRC Sales & Estimating Assistant';
       const sc = document.getElementById('chatScroll');
+      const signedBanner = state.justSignedCert ? `
+        <div class="pdf-banner" style="margin-bottom:16px;">
+          <div>
+            <strong>✅ Legal NDA &amp; IP Agreement Executed (${esc(state.justSignedCert.certificate_id)})</strong>
+            <span>Signed ${esc(state.justSignedCert.signed_at_local)} • SHA-256 Seal: ${esc((state.justSignedCert.evidence_sha256 || '').slice(0, 20))}…</span>
+          </div>
+          <a class="dl-btn" target="_blank" href="${state.apiBase}${state.justSignedCert.download_url}?pin=${encodeURIComponent(state.pin)}">📄 Download My Signed PDF ↗</a>
+        </div>
+      ` : '';
       sc.innerHTML = `
         <div class="welcome-hero">
+          ${signedBanner}
           <h2>Hey Michael — Ready for Your Next Appointment 👋</h2>
           <p>Your custom <b>Dinverno Remodeling and Construction</b> AI workspace. Build Good/Better/Best Proposal PDFs, inspect jobsite photos, verify Michigan Residential Code, or sync your DRC CRM leads.</p>
           <div class="quick-grid">
@@ -798,6 +1132,8 @@
       document.getElementById('backdrop').classList.remove('open');
     }
 
+    document.getElementById('clearSigBtn').addEventListener('click', clearSignaturePad);
+    document.getElementById('submitNdaBtn').addEventListener('click', submitNdaSignature);
     document.getElementById('loginForm').addEventListener('submit', e => {
       e.preventDefault();
       tryUnlock(document.getElementById('pinField').value.trim());
@@ -844,9 +1180,9 @@
       document.getElementById('pinField').value = state.pin;
       tryUnlock(state.pin);
     }
-    // Poll Adriano mesh updates quietly every 15s
+    // Poll Adriano mesh updates quietly every 15s (only once NDA is signed)
     setInterval(() => {
-      if (state.pin && state.apiBase && !state.busy) refreshBootstrap().catch(() => {});
+      if (state.pin && state.apiBase && !state.busy && !state.ndaLocked) refreshBootstrap().catch(() => {});
     }, 15000);
   </script>
 </body>
