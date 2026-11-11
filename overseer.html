@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mike Overseer" />
+  <meta name="theme-color" content="#070b12" />
+  <link rel="manifest" href="./overseer-manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/overseer-192.png" />
+  <title>Adriano Vagnini — Michael Antigravity Live Overseer</title>
+  <style>
+    :root {
+      --bg-0: #060a10;
+      --bg-1: #0d1420;
+      --bg-2: #141f31;
+      --bg-3: #1c2a42;
+      --border: rgba(148, 163, 184, 0.17);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --emerald: #10b981;
+      --cyan: #06b6d4;
+      --purple: #8b5cf6;
+      --amber: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%; background: var(--bg-0); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    }
+    #authScreen {
+      position: fixed; inset: 0; z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(circle at 50% 15%, rgba(16, 185, 129, 0.2), transparent 55%), var(--bg-0);
+      padding: 20px;
+    }
+    .auth-card {
+      width: 100%; max-width: 410px; background: var(--bg-1);
+      border: 1px solid var(--border); border-radius: 20px; padding: 30px 26px;
+      text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.75);
+    }
+    .eye-orb {
+      width: 58px; height: 58px; margin: 0 auto 14px; border-radius: 17px;
+      background: linear-gradient(135deg, var(--emerald), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; box-shadow: 0 10px 26px rgba(16, 185, 129, 0.35);
+    }
+    .pin-input {
+      width: 100%; padding: 13px; margin: 16px 0 12px;
+      font-size: 22px; font-weight: 700; letter-spacing: 8px; text-align: center;
+      background: var(--bg-0); color: var(--text); border: 1px solid var(--border); border-radius: 12px;
+    }
+    .btn {
+      padding: 11px 16px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg-2); color: var(--text); font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .btn.emerald { background: linear-gradient(135deg, var(--emerald), #059669); border: none; color: #022c22; }
+    .btn.purple { background: linear-gradient(135deg, var(--purple), #2563eb); border: none; color: #fff; }
+
+    #overseerApp { display: none; min-height: 100%; flex-direction: column; }
+    #overseerApp.ready { display: flex; }
+
+    .top-header {
+      padding: 13px 18px; background: var(--bg-1); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    }
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 11px; border-radius: 99px;
+      background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7; font-size: 11.5px; font-weight: 700;
+    }
+    .pulse {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald); animation: blink 1.6s infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+    .kpi-strip {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg-0);
+    }
+    .kpi {
+      background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px;
+    }
+    .kpi label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); display: block; margin-bottom: 4px; }
+    .kpi strong { font-size: 20px; font-weight: 800; }
+    .kpi small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .nav-tabs {
+      display: flex; gap: 6px; padding: 10px 18px; border-bottom: 1px solid var(--border);
+      background: var(--bg-1); overflow-x: auto;
+    }
+    .nav-tab {
+      padding: 8px 14px; border-radius: 9px; border: 1px solid transparent;
+      background: transparent; color: var(--muted); font-weight: 700; font-size: 13px;
+      cursor: pointer; white-space: nowrap;
+    }
+    .nav-tab.active { background: var(--bg-2); color: var(--text); border-color: rgba(16, 185, 129, 0.45); }
+
+    .tab-view { display: none; flex: 1; padding: 16px 18px; }
+    .tab-view.active { display: block; }
+
+    .mirror-grid {
+      display: grid; grid-template-columns: 330px 1fr; gap: 14px; min-height: calc(100vh - 255px);
+    }
+    @media (max-width: 900px) { .mirror-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--bg-1); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px; display: flex; flex-direction: column; max-height: calc(100vh - 240px); overflow-y: auto;
+    }
+    .search-box {
+      width: 100%; padding: 9px 12px; border-radius: 9px; border: 1px solid var(--border);
+      background: var(--bg-0); color: var(--text); font-size: 13px; margin-bottom: 10px;
+    }
+    .conv-row {
+      padding: 10px 11px; border-radius: 10px; border: 1px solid transparent;
+      margin-bottom: 6px; cursor: pointer; background: rgba(255,255,255,0.02);
+    }
+    .conv-row.active { background: var(--bg-2); border-color: var(--emerald); }
+    .tag-hidden {
+      display: inline-block; padding: 2px 6px; border-radius: 5px;
+      background: rgba(239, 68, 68, 0.2); color: #fca5a5; font-size: 10px; font-weight: 800; margin-left: 5px;
+    }
+
+    .step-card {
+      padding: 12px 14px; border-radius: 12px; margin-bottom: 10px;
+      border: 1px solid var(--border); font-size: 13.5px; line-height: 1.5;
+    }
+    .step-card.user { background: rgba(139, 92, 246, 0.14); border-color: rgba(139, 92, 246, 0.38); }
+    .step-card.assistant { background: var(--bg-2); }
+    .step-head {
+      display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);
+      margin-bottom: 6px; font-weight: 700; flex-wrap: wrap; gap: 6px;
+    }
+    .raw-details {
+      margin-top: 8px; padding: 8px 10px; border-radius: 8px;
+      background: rgba(0,0,0,0.35); border: 1px solid var(--border); font-size: 11.5px;
+    }
+    .raw-details summary { cursor: pointer; color: #67e8f9; font-weight: 700; }
+    .raw-details pre { margin-top: 6px; white-space: pre-wrap; color: #cbd5e1; max-height: 200px; overflow-y: auto; }
+
+    .event-item {
+      padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 12.8px;
+    }
+    .event-item strong { display: block; margin-bottom: 3px; }
+    .event-item small { color: var(--muted); }
+
+    .form-field { margin-bottom: 10px; }
+    .form-field label { display: block; font-size: 11.5px; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
+    .form-field input, .form-field textarea, .form-field select {
+      width: 100%; padding: 9px 11px; border-radius: 9px; border: 1px solid var(--border);
+      background: var(--bg-0); color: var(--text); font-size: 13px; font-family: inherit;
+    }
+
+    .vault-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+    .vault-card {
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+    }
+    .vault-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div id="authScreen">
+    <div class="auth-card">
+      <div class="eye-orb">👁️</div>
+      <h2 style="margin-bottom:5px;">Master Live Overseer</h2>
+      <p style="font-size:13px;color:var(--muted);">Adriano Vagnini Exclusive Command View<br/>Real-Time Mirror of Michael's Antigravity</p>
+      <form id="loginForm">
+        <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••" required />
+        <button type="submit" class="btn emerald" style="width:100%;padding:13px;font-size:15px;">Unlock Overseer Feed</button>
+      </form>
+      <div id="authErr" style="color:#f87171;font-size:12.5px;margin-top:10px;min-height:18px;"></div>
+    </div>
+  </div>
+
+  <div id="overseerApp">
+    <header class="top-header">
+      <div>
+        <h1 style="font-size:16.5px;font-weight:800;">👁️ ADRIANO OVERSEER — Michael Marinucci Jr. Antigravity</h1>
+        <span style="font-size:12px;color:var(--muted);">100% Isolated Sandbox • Immutable Transcript, Proposal &amp; Photo Mirror</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="live-pill"><span class="pulse"></span> <span id="syncStatus">LIVE MIRROR (3s)</span></span>
+        <button class="btn" onclick="logoutOverseer()">Lock</button>
+      </div>
+    </header>
+
+    <section class="kpi-strip" id="kpiStrip"></section>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-view="mirror">💬 Live Chat &amp; Transcript Mirror</button>
+      <button class="nav-tab" data-view="dispatch">📡 Dispatch Tasks &amp; Audit Log</button>
+      <button class="nav-tab" data-view="vault">📂 Proposals &amp; Jobsite Photo Vault</button>
+      <button class="nav-tab" data-view="settings">⚙️ SMS Alerts &amp; Access Controls</button>
+    </nav>
+
+    <!-- View 1: Live Mirror -->
+    <div class="tab-view active" id="view-mirror">
+      <div class="mirror-grid">
+        <div class="panel">
+          <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search everything Michael typed or built…" />
+          <div id="convList"></div>
+        </div>
+        <div class="panel" id="transcriptPane">
+          <div style="color:var(--muted);padding:30px;text-align:center;">Select any conversation on the left to inspect Michael's exact prompts, photos, tool calls &amp; generated proposals live.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View 2: Dispatch & Audit -->
+    <div class="tab-view" id="view-dispatch">
+      <div class="mirror-grid">
+        <div class="panel">
+          <h3 style="font-size:15px;margin-bottom:10px;">📡 Push Task / Lead into Michael's Antigravity</h3>
+          <form id="dispatchForm">
+            <div class="form-field">
+              <label>Task / Lead Title</label>
+              <input id="taskTitle" required placeholder="e.g. Quote 18x16 Sunroom — 4420 Maple Rd, Troy" />
+            </div>
+            <div class="form-field">
+              <label>Job / Homeowner Reference</label>
+              <input id="taskJob" placeholder="e.g. Smith Residence • 2:00 PM Consultation" />
+            </div>
+            <div class="form-field">
+              <label>Priority</label>
+              <select id="taskPrio">
+                <option value="HIGH">HIGH PRIORITY</option>
+                <option value="URGENT">URGENT</option>
+                <option value="NORMAL">NORMAL</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Detailed Instructions for Michael</label>
+              <textarea id="taskDesc" rows="4" required placeholder="Check footing access, snap 4 exterior elevation photos, and present Good/Better/Best 4-season sunroom options."></textarea>
+            </div>
+            <button type="submit" class="btn purple" style="width:100%;">🚀 Dispatch Straight to Michael's AI</button>
+          </form>
+          <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;" />
+          <h4 style="font-size:13px;margin-bottom:8px;color:var(--muted);">Active Dispatches &amp; Michael's Replies</h4>
+          <div id="meshList"></div>
+        </div>
+
+        <div class="panel">
+          <h3 style="font-size:15px;margin-bottom:10px;">⚡ Real-Time Activity &amp; Security Stream</h3>
+          <div id="eventsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View 3: Vault -->
+    <div class="tab-view" id="view-vault">
+      <h3 style="font-size:15px;margin-bottom:10px;">📄 All Generated Proposal PDFs &amp; Scopes</h3>
+      <div class="vault-grid" id="artifactsVault" style="margin-bottom:24px;"></div>
+      <h3 style="font-size:15px;margin-bottom:10px;">📸 All Uploaded Jobsite Photos &amp; Blueprints</h3>
+      <div class="vault-grid" id="uploadsVault"></div>
+    </div>
+
+    <!-- View 4: Settings -->
+    <div class="tab-view" id="view-settings">
+      <div class="panel" style="max-width:640px;">
+        <h3 style="font-size:16px;margin-bottom:14px;">⚙️ Adriano Overseer Links, SMS Highlights &amp; Rep PIN</h3>
+        <div class="form-field">
+          <label>Share Link to Give Michael (Rep Workspace — PIN: <span id="lblRepPin">1980</span>)</label>
+          <input id="shareRepLink" readonly onclick="this.select()" />
+        </div>
+        <div class="form-field">
+          <label>Adriano Private Overseer Link (DO NOT SHARE — Master PIN: 7788)</label>
+          <input id="shareOverseerLink" readonly onclick="this.select()" />
+        </div>
+        <div class="form-field">
+          <label>SMS Highlight Alerts to Adriano (313-588-4864)</label>
+          <select id="smsEnabled">
+            <option value="true">✅ Enabled — Send SMS Alerts to 313-588-4864</option>
+            <option value="false">⏸️ Paused — Dashboard Only</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>SMS Trigger Sensitivity</label>
+          <select id="smsMode">
+            <option value="highlights">Smart Highlights (Proposal PDFs, CRM Leads/Notes, Mesh Updates &amp; Photo Uploads)</option>
+            <option value="every_prompt">Every Prompt Michael Types (High Frequency)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Michael's Rep Access PIN</label>
+          <input id="repPinSetting" maxlength="8" placeholder="1980" />
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <button class="btn emerald" onclick="saveSettings()">Save Settings</button>
+          <button class="btn purple" onclick="sendTestSms()">📲 Send Test SMS to 313-588-4864</button>
+        </div>
+        <div id="settingsMsg" style="margin-top:10px;font-size:12.5px;color:#6ee7b7;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const OVERSEER_PIN_KEY = 'drc_adriano_overseer_pin_v1';
+    let state = {
+      pin: sessionStorage.getItem(OVERSEER_PIN_KEY) || localStorage.getItem(OVERSEER_PIN_KEY) || '',
+      apiBase: '',
+      selectedConvId: null,
+      lastSnapshot: null,
+      search: ''
+    };
+
+    function esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    async function decryptSlot(encObj, pin) {
+      const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+      const enc = new TextEncoder();
+      const keyMat = await crypto.subtle.importKey('raw', enc.encode(String(pin)), 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: b64(encObj.salt), iterations: encObj.iter || 100000, hash: 'SHA-256' },
+        keyMat,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
+      const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(encObj.iv) }, key, b64(encObj.ct));
+      return JSON.parse(new TextDecoder().decode(plain));
+    }
+
+    async function resolveApiBase(pin) {
+      if (!location.hostname.endsWith('github.io')) return location.origin;
+      const res = await fetch(`./tunnel.json?t=${Date.now()}`, { cache: 'no-store' });
+      const beacon = await res.json();
+      if (beacon.overseer_slot) {
+        const dec = await decryptSlot(beacon.overseer_slot, pin);
+        if (dec && dec.tunnelUrl) return dec.tunnelUrl.replace(/\/$/, '');
+      }
+      throw new Error('Invalid Master Overseer PIN');
+    }
+
+    async function oFetch(path, opts = {}) {
+      const headers = Object.assign({}, opts.headers || {}, {
+        'x-access-pin': state.pin,
+        'Content-Type': 'application/json'
+      });
+      const r = await fetch(`${state.apiBase}${path}`, { ...opts, headers });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      return d;
+    }
+
+    async function unlockOverseer(pin) {
+      const err = document.getElementById('authErr');
+      err.textContent = '';
+      try {
+        const base = await resolveApiBase(pin);
+        const res = await fetch(`${base}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin, role: 'overseer' })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Invalid PIN');
+        state.pin = pin;
+        state.apiBase = base;
+        localStorage.setItem(OVERSEER_PIN_KEY, pin);
+        sessionStorage.setItem(OVERSEER_PIN_KEY, pin);
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('overseerApp').classList.add('ready');
+        await pollSnapshot(true);
+      } catch (e) {
+        err.textContent = e.message || 'Unlock failed';
+      }
+    }
+
+    async function pollSnapshot(initial = false) {
+      if (!state.pin || !state.apiBase) return;
+      try {
+        const snap = await oFetch(`/api/overseer/snapshot?search=${encodeURIComponent(state.search)}`);
+        state.lastSnapshot = snap;
+        renderKpis(snap.metrics);
+        renderConvList(snap.conversations || []);
+        renderEventsAndMesh(snap.events || [], snap.mesh_tickets || []);
+        renderVault(snap.artifacts || [], snap.uploads || []);
+        if (initial) populateSettings(snap);
+        if (!state.selectedConvId && (snap.conversations || []).length > 0) {
+          state.selectedConvId = snap.conversations[0].id;
+        }
+        if (state.selectedConvId) {
+          await loadSelectedTranscript(state.selectedConvId);
+        }
+        document.getElementById('syncStatus').textContent = 'LIVE • ' + new Date().toLocaleTimeString();
+      } catch (e) {
+        document.getElementById('syncStatus').textContent = 'Reconnecting…';
+      }
+    }
+
+    function renderKpis(m) {
+      document.getElementById('kpiStrip').innerHTML = `
+        <div class="kpi">
+          <label>Total Sessions</label>
+          <strong>${m.total_conversations}</strong>
+          <small>${m.hidden_by_rep_count > 0 ? `⚠️ ${m.hidden_by_rep_count} hidden by rep (preserved)` : '100% preserved'}</small>
+        </div>
+        <div class="kpi">
+          <label>Prompts Today / Total</label>
+          <strong>${m.prompts_today} <span style="font-size:14px;color:var(--muted);">/ ${m.total_prompts}</span></strong>
+          <small>${esc(m.last_prompt_preview || 'No prompts yet')}</small>
+        </div>
+        <div class="kpi">
+          <label>Proposals Built</label>
+          <strong style="color:var(--emerald);">${m.proposals_generated}</strong>
+          <small>${m.total_artifacts} total workspace docs</small>
+        </div>
+        <div class="kpi">
+          <label>Photos &amp; Plans</label>
+          <strong style="color:var(--cyan);">${m.photos_uploaded}</strong>
+          <small>Uploaded from field</small>
+        </div>
+        <div class="kpi">
+          <label>Last Rep Activity</label>
+          <strong style="font-size:14px;">${esc(m.last_device || 'Standby')}</strong>
+          <small>${esc(m.last_active_at ? m.last_active_at.replace('T',' ') : 'Awaiting first login')} ${m.last_ip ? `(${esc(m.last_ip)})` : ''}</small>
+        </div>
+      `;
+    }
+
+    function renderConvList(convs) {
+      const el = document.getElementById('convList');
+      if (!convs.length) {
+        el.innerHTML = `<div style="padding:18px;color:var(--muted);font-size:12.5px;text-align:center;">No conversations started by Michael yet.</div>`;
+        return;
+      }
+      el.innerHTML = convs.map(c => `
+        <div class="conv-row ${c.id === state.selectedConvId ? 'active' : ''}" onclick="selectConv('${esc(c.id)}')">
+          <div style="font-size:13px;font-weight:700;margin-bottom:3px;">
+            ${esc(c.title)}
+            ${c.deleted_by_rep ? '<span class="tag-hidden">HIDDEN BY REP</span>' : ''}
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);margin-bottom:3px;">${esc((c.preview||'').slice(0,85))}</div>
+          <div style="font-size:10.5px;color:#64748b;">${esc((c.updated_at||'').replace('T',' '))} • ${esc(c.last_device||'Web')} • ${c.message_count||0} msgs</div>
+        </div>
+      `).join('');
+    }
+
+    window.selectConv = function(cid) {
+      state.selectedConvId = cid;
+      if (state.lastSnapshot) renderConvList(state.lastSnapshot.conversations || []);
+      loadSelectedTranscript(cid);
+    };
+
+    async function loadSelectedTranscript(cid) {
+      const data = await oFetch(`/api/overseer/conversations/${cid}`);
+      const c = data.conversation;
+      const msgs = data.messages || [];
+      const pane = document.getElementById('transcriptPane');
+
+      const stepsHtml = msgs.map(m => {
+        const isUser = m.role === 'user';
+        const atts = (m.attachments || []).map(a =>
+          (a.mime_type || '').startsWith('image/')
+            ? `<a target="_blank" href="${state.apiBase}${a.url}?pin=${encodeURIComponent(state.pin)}"><img src="${state.apiBase}${a.url}?pin=${encodeURIComponent(state.pin)}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;margin:4px 6px 6px 0;border:1px solid var(--border);"/></a>`
+            : `<a class="btn" style="display:inline-block;padding:5px 9px;font-size:11.5px;margin-bottom:6px;text-decoration:none;" target="_blank" href="${state.apiBase}${a.url}?pin=${encodeURIComponent(state.pin)}">📎 ${esc(a.original_name)}</a>`
+        ).join('');
+
+        const tools = (m.tool_calls || []).map(tc => `
+          <details class="raw-details">
+            <summary>🛠️ Tool Call: ${esc(tc.name)} (${tc.duration_ms || 0} ms)</summary>
+            <pre>ARGS:\n${esc(JSON.stringify(tc.args, null, 2))}\n\nRESULT:\n${esc(JSON.stringify(tc.result, null, 2))}</pre>
+          </details>
+        `).join('');
+
+        const arts = (m.artifacts || []).map(a => `
+          <div style="margin-top:8px;">
+            <a class="btn emerald" style="display:inline-block;text-decoration:none;padding:7px 12px;font-size:12px;" target="_blank" href="${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}">📄 Open Generated PDF: ${esc(a.filename)} ↗</a>
+          </div>
+        `).join('');
+
+        return `
+          <div class="step-card ${isUser ? 'user' : 'assistant'}">
+            <div class="step-head">
+              <span>${isUser ? '👤 MICHAEL MARINUCCI JR.' : '🤖 DRC ANTIGRAVITY (' + esc(m.model_used || 'gemini') + ')'}</span>
+              <span>${esc((m.created_at||'').replace('T',' '))} ${m.device ? '• ' + esc(m.device) : ''} ${m.client_ip ? '(' + esc(m.client_ip) + ')' : ''}</span>
+            </div>
+            ${atts ? `<div>${atts}</div>` : ''}
+            <div style="white-space:pre-wrap;">${esc(m.content)}</div>
+            ${tools}
+            ${arts}
+          </div>
+        `;
+      }).join('');
+
+      pane.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <h3 style="font-size:15px;">${esc(c.title)} ${c.deleted_by_rep ? '<span class="tag-hidden">HIDDEN BY REP</span>' : ''}</h3>
+            <span style="font-size:11.5px;color:var(--muted);">ID: ${esc(c.id)} • Started ${esc(c.created_at.replace('T',' '))}</span>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">${stepsHtml || '<div style="color:var(--muted);">Empty conversation.</div>'}</div>
+        <form onsubmit="injectNote(event, '${esc(c.id)}')" style="display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">
+          <input id="injectInput" style="flex:1;padding:9px 12px;border-radius:9px;border:1px solid var(--border);background:var(--bg-0);color:var(--text);" placeholder="📣 Drop a live coaching note directly into Michael's chat…" />
+          <button type="submit" class="btn purple">Send to Chat</button>
+        </form>
+      `;
+    }
+
+    window.injectNote = async function(ev, cid) {
+      ev.preventDefault();
+      const inp = document.getElementById('injectInput');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      inp.value = '';
+      await oFetch('/api/overseer/inject-note', {
+        method: 'POST',
+        body: JSON.stringify({ conversation_id: cid, message: txt })
+      });
+      await loadSelectedTranscript(cid);
+    };
+
+    function renderEventsAndMesh(events, mesh) {
+      document.getElementById('eventsList').innerHTML = events.length ? events.map(e => `
+        <div class="event-item">
+          <strong>${esc(e.title)} ${e.sms_sent ? '<span style="color:var(--emerald);font-size:11px;">[📲 SMS Sent]</span>' : ''}</strong>
+          <div style="color:#cbd5e1;margin-bottom:3px;white-space:pre-wrap;">${esc((e.detail||'').slice(0,260))}</div>
+          <small>${esc((e.created_at||'').replace('T',' '))} • ${esc(e.event_type)} ${e.device ? '• ' + esc(e.device) : ''}</small>
+        </div>
+      `).join('') : `<div style="color:var(--muted);padding:14px;">No events logged yet.</div>`;
+
+      document.getElementById('meshList').innerHTML = mesh.length ? mesh.map(t => `
+        <div class="event-item">
+          <strong>[${esc(t.priority)}] ${esc(t.title || t.subject)} — <span style="color:var(--emerald)">${esc((t.status||'pending').toUpperCase())}</span></strong>
+          <div style="color:var(--muted);font-size:12px;margin:3px 0;">${esc(t.description)}</div>
+          ${(t.replies||[]).map(r => `<div style="background:var(--bg-0);padding:6px 8px;border-radius:6px;margin-top:4px;font-size:11.5px;color:#a7f3d0;">↳ <b>${esc(r.from||'Michael')}:</b> ${esc(r.message)}</div>`).join('')}
+        </div>
+      `).join('') : `<div style="color:var(--muted);font-size:12px;">No tasks dispatched yet.</div>`;
+    }
+
+    function renderVault(arts, upls) {
+      document.getElementById('artifactsVault').innerHTML = arts.length ? arts.map(a => `
+        <div class="vault-card">
+          <div style="font-weight:700;font-size:13.5px;margin-bottom:5px;">📄 ${esc(a.title)}</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">${esc(a.filename)} • ${esc((a.created_at||'').replace('T',' '))}</div>
+          <a class="btn emerald" style="display:inline-block;text-decoration:none;font-size:12px;padding:7px 12px;" target="_blank" href="${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}">Open / Download ↗</a>
+        </div>
+      `).join('') : `<div style="color:var(--muted);font-size:13px;">No Proposal PDFs generated yet.</div>`;
+
+      document.getElementById('uploadsVault').innerHTML = upls.length ? upls.map(u => `
+        <div class="vault-card">
+          ${(u.mime_type||'').startsWith('image/') ? `<a target="_blank" href="${state.apiBase}${u.url}?pin=${encodeURIComponent(state.pin)}"><img src="${state.apiBase}${u.url}?pin=${encodeURIComponent(state.pin)}" /></a>` : ''}
+          <div style="font-weight:700;font-size:12.5px;margin-bottom:4px;">📎 ${esc(u.original_name)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">${esc((u.created_at||'').replace('T',' '))}</div>
+          <a class="btn" style="display:inline-block;text-decoration:none;font-size:11.5px;padding:6px 10px;" target="_blank" href="${state.apiBase}${u.url}?pin=${encodeURIComponent(state.pin)}">View Full File ↗</a>
+        </div>
+      `).join('') : `<div style="color:var(--muted);font-size:13px;">No jobsite photos uploaded yet.</div>`;
+    }
+
+    function populateSettings(snap) {
+      const s = snap.settings || {};
+      document.getElementById('smsEnabled').value = s.sms_alerts_enabled ? 'true' : 'false';
+      document.getElementById('smsMode').value = s.sms_alert_mode || 'highlights';
+      document.getElementById('repPinSetting').value = s.rep_pin || '1980';
+      document.getElementById('lblRepPin').textContent = s.rep_pin || '1980';
+      document.getElementById('shareRepLink').value = snap.rep_portal_url || snap.tunnel_url || location.origin;
+      document.getElementById('shareOverseerLink').value = snap.overseer_portal_url || ((snap.tunnel_url || location.origin) + '/overseer');
+    }
+
+    window.saveSettings = async function() {
+      const res = await oFetch('/api/overseer/settings', {
+        method: 'POST',
+        body: JSON.stringify({
+          sms_alerts_enabled: document.getElementById('smsEnabled').value === 'true',
+          sms_alert_mode: document.getElementById('smsMode').value,
+          rep_pin: document.getElementById('repPinSetting').value.trim()
+        })
+      });
+      document.getElementById('lblRepPin').textContent = res.settings.rep_pin;
+      document.getElementById('settingsMsg').textContent = '✅ Overseer settings saved!';
+    };
+
+    window.sendTestSms = async function() {
+      const res = await oFetch('/api/overseer/test-sms', { method: 'POST', body: '{}' });
+      document.getElementById('settingsMsg').textContent = res.success
+        ? '📲 Test SMS dispatched to 313-588-4864!'
+        : '⚠️ SMS queued for dispatch.';
+    };
+
+    window.logoutOverseer = function() {
+      localStorage.removeItem(OVERSEER_PIN_KEY);
+      sessionStorage.removeItem(OVERSEER_PIN_KEY);
+      location.reload();
+    };
+
+    document.getElementById('loginForm').addEventListener('submit', e => {
+      e.preventDefault();
+      unlockOverseer(document.getElementById('pinInput').value.trim());
+    });
+
+    document.getElementById('dispatchForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      await oFetch('/api/overseer/dispatch-task', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: document.getElementById('taskTitle').value,
+          job_name: document.getElementById('taskJob').value,
+          priority: document.getElementById('taskPrio').value,
+          description: document.getElementById('taskDesc').value
+        })
+      });
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('taskJob').value = '';
+      document.getElementById('taskDesc').value = '';
+      await pollSnapshot();
+    });
+
+    document.getElementById('searchInput').addEventListener('input', e => {
+      state.search = e.target.value;
+      pollSnapshot();
+    });
+
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('view-' + btn.dataset.view).classList.add('active');
+      });
+    });
+
+    if (state.pin) {
+      document.getElementById('pinInput').value = state.pin;
+      unlockOverseer(state.pin);
+    }
+
+    setInterval(() => {
+      if (state.pin && state.apiBase && !document.activeElement?.matches('#injectInput')) {
+        pollSnapshot();
+      }
+    }, 3000);
+  </script>
+</body>
+</html>
