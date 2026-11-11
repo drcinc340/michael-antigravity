@@ -194,7 +194,7 @@
     <nav class="nav-tabs">
       <button class="nav-tab active" data-view="mirror">💬 Live Chat &amp; Transcript Mirror</button>
       <button class="nav-tab" data-view="dispatch">📡 Dispatch Tasks &amp; Audit Log</button>
-      <button class="nav-tab" data-view="vault">📂 Proposals &amp; Jobsite Photo Vault</button>
+      <button class="nav-tab" data-view="vault">⚖️ Signed NDA, Proposals &amp; Photo Vault</button>
       <button class="nav-tab" data-view="settings">⚙️ SMS Alerts &amp; Access Controls</button>
     </nav>
 
@@ -253,6 +253,14 @@
 
     <!-- View 3: Vault -->
     <div class="tab-view" id="view-vault">
+      <div class="panel" style="max-height:none;margin-bottom:22px;border-color:rgba(16, 185, 129, 0.4);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+          <h3 style="font-size:15.5px;">⚖️ Executed Legal NDA, IP Assignment &amp; Monitoring Certificate Vault</h3>
+          <button class="btn" onclick="resetNdaRequirement()" style="border-color:rgba(245,158,11,0.45);color:#fcd34d;font-size:12px;padding:7px 12px;">🔄 Require Fresh NDA Signature</button>
+        </div>
+        <div id="ndaVaultBox"></div>
+      </div>
+
       <h3 style="font-size:15px;margin-bottom:10px;">📄 All Generated Proposal PDFs &amp; Scopes</h3>
       <div class="vault-grid" id="artifactsVault" style="margin-bottom:24px;"></div>
       <h3 style="font-size:15px;margin-bottom:10px;">📸 All Uploaded Jobsite Photos &amp; Blueprints</h3>
@@ -378,10 +386,10 @@
       try {
         const snap = await oFetch(`/api/overseer/snapshot?search=${encodeURIComponent(state.search)}`);
         state.lastSnapshot = snap;
-        renderKpis(snap.metrics);
+        renderKpis(snap.metrics, snap.nda_status);
         renderConvList(snap.conversations || []);
         renderEventsAndMesh(snap.events || [], snap.mesh_tickets || []);
-        renderVault(snap.artifacts || [], snap.uploads || []);
+        renderVault(snap.artifacts || [], snap.uploads || [], snap.nda_status);
         if (initial) populateSettings(snap);
         if (!state.selectedConvId && (snap.conversations || []).length > 0) {
           state.selectedConvId = snap.conversations[0].id;
@@ -395,8 +403,15 @@
       }
     }
 
-    function renderKpis(m) {
+    function renderKpis(m, ndaStatus) {
+      const ndaSigned = ndaStatus && ndaStatus.signed && ndaStatus.active_signature;
+      const sig = ndaSigned ? ndaStatus.active_signature : null;
       document.getElementById('kpiStrip').innerHTML = `
+        <div class="kpi" style="border-color:${ndaSigned ? 'rgba(16,185,129,0.5)' : 'rgba(245,158,11,0.5)'};">
+          <label>⚖️ Legal NDA Gate</label>
+          <strong style="font-size:15px;color:${ndaSigned ? 'var(--emerald)' : 'var(--amber)'};">${ndaSigned ? '✅ SIGNED & SEALED' : '🔒 GATE LOCKED'}</strong>
+          <small>${ndaSigned ? `<a href="${state.apiBase}${sig.download_url}?pin=${encodeURIComponent(state.pin)}" target="_blank" style="color:#6ee7b7;text-decoration:underline;">PDF: ${esc(sig.id)} ↗</a>` : 'Blocks workspace until signed'}</small>
+        </div>
         <div class="kpi">
           <label>Total Sessions</label>
           <strong>${m.total_conversations}</strong>
@@ -536,7 +551,50 @@
       `).join('') : `<div style="color:var(--muted);font-size:12px;">No tasks dispatched yet.</div>`;
     }
 
-    function renderVault(arts, upls) {
+    function renderVault(arts, upls, ndaStatus) {
+      const box = document.getElementById('ndaVaultBox');
+      if (box) {
+        const active = ndaStatus && ndaStatus.active_signature;
+        const hist = (ndaStatus && ndaStatus.history) || [];
+        if (!active && !hist.length) {
+          box.innerHTML = `
+            <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.35);border-radius:11px;padding:12px 14px;font-size:13px;color:#fde68a;">
+              🔒 <b>NDA Gate Active &amp; Enforced:</b> Michael cannot access any tools, chats, or CRM features until he checks both consent boxes, types his full legal name, and draws his live signature. As soon as he signs, the sealed PDF will appear here, in your local Legal Vault, in <code>DRC_Antigravity_Shared</code>, and in your email (<code>drcinc340@gmail.com</code>) + SMS (<code>313-588-4864</code>).
+            </div>
+          `;
+        } else {
+          let html = '';
+          if (active) {
+            html += `
+              <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.45);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                <div style="font-size:12.8px;line-height:1.55;">
+                  <div style="font-size:14.5px;font-weight:800;color:#6ee7b7;margin-bottom:3px;">✅ ACTIVE EXECUTED NDA: ${esc(active.signer_typed_name)} (${esc(active.id)})</div>
+                  <div><b>Signed Timestamp:</b> ${esc(active.signed_at_local)} (${esc(active.signed_at_utc)})</div>
+                  <div><b>Verified IP &amp; Device:</b> ${esc(active.client_ip)} • ${esc(active.device_label)} • ${esc(active.signer_email)}</div>
+                  <div><b>SHA-256 Forensic Seal:</b> <code style="color:#a7f3d0;font-size:11.5px;">${esc(active.evidence_sha256)}</code></div>
+                </div>
+                <a class="btn emerald" style="text-decoration:none;padding:10px 16px;font-size:13px;" target="_blank" href="${state.apiBase}${active.download_url}?pin=${encodeURIComponent(state.pin)}">📄 Download Signed NDA PDF ↗</a>
+              </div>
+            `;
+          } else {
+            html += `
+              <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:12.5px;color:#fde68a;">
+                🔒 <b>Workspace Re-Locked Pending Fresh Signature</b> — Previous signed certificates remain permanently archived below.
+              </div>
+            `;
+          }
+          if (hist.length > (active ? 1 : 0)) {
+            html += `<div style="font-size:12px;color:var(--muted);margin-top:8px;"><b>Historical Executed Certificates (${hist.length}):</b></div>` + hist.map(h => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-bottom:1px solid var(--border);font-size:12px;">
+                <span><b>${esc(h.id)}</b> • ${esc(h.signer_typed_name)} • ${esc(h.signed_at_local)} • ${esc(h.client_ip)} ${h.is_active ? '<b style="color:var(--emerald)">[ACTIVE]</b>' : '<span style="color:var(--muted)">[ARCHIVED]</span>'}</span>
+                <a class="btn" style="text-decoration:none;padding:4px 9px;font-size:11px;" target="_blank" href="${state.apiBase}${h.download_url}?pin=${encodeURIComponent(state.pin)}">PDF ↗</a>
+              </div>
+            `).join('');
+          }
+          box.innerHTML = html;
+        }
+      }
+
       document.getElementById('artifactsVault').innerHTML = arts.length ? arts.map(a => `
         <div class="vault-card">
           <div style="font-weight:700;font-size:13.5px;margin-bottom:5px;">📄 ${esc(a.title)}</div>
@@ -554,6 +612,15 @@
         </div>
       `).join('') : `<div style="color:var(--muted);font-size:13px;">No jobsite photos uploaded yet.</div>`;
     }
+
+    window.resetNdaRequirement = async function() {
+      if (!confirm('Lock Michael\'s workspace until he signs a fresh NDA? (All prior signed PDFs remain safely archived.)')) return;
+      await oFetch('/api/overseer/nda-reset', {
+        method: 'POST',
+        body: JSON.stringify({ reason: 'Adriano triggered fresh NDA signature requirement from Overseer' })
+      });
+      await pollSnapshot();
+    };
 
     function populateSettings(snap) {
       const s = snap.settings || {};
