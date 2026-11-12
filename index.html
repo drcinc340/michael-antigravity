@@ -470,6 +470,7 @@
       </div>
       <div class="sb-actions">
         <button class="new-chat-btn" id="newChatBtn">＋ New Chat</button>
+        <button class="mini-btn primary" id="sidebarZoomBtn" style="width:100%;margin-top:8px;padding:9px 12px;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:6px;">💬 Send / View Zoom Texts</button>
         <div class="sb-tabs">
           <button class="sb-tab active" data-tab="chats">Chats</button>
           <button class="sb-tab" data-tab="mesh">Adriano <span id="meshBadge" class="badge-dot" style="display:none">0</span></button>
@@ -490,11 +491,14 @@
           <button class="menu-toggle" id="menuBtn">☰</button>
           <div class="topbar-title" id="chatHeaderTitle">Antigravity All-Access AI</div>
         </div>
-        <select id="modelSelect" class="model-select">
-          <option value="gemini-3-flash-preview">⚡ Gemini 3 Pro-Flash (Web + Excel)</option>
-          <option value="gemini-2.5-flash">🧠 Gemini 2.5 Balanced</option>
-          <option value="gemini-flash-lite-latest">🚀 Instant Fast Mode</option>
-        </select>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button type="button" class="mini-btn primary" id="topZoomBtn" style="margin:0;padding:7px 11px;font-weight:700;white-space:nowrap;">💬 Zoom SMS</button>
+          <select id="modelSelect" class="model-select">
+            <option value="gemini-3-flash-preview">⚡ Gemini 3 Pro-Flash (Web + Excel)</option>
+            <option value="gemini-2.5-flash">🧠 Gemini 2.5 Balanced</option>
+            <option value="gemini-flash-lite-latest">🚀 Instant Fast Mode</option>
+          </select>
+        </div>
       </header>
 
       <section class="chat-scroll" id="chatScroll"></section>
@@ -511,6 +515,51 @@
         </div>
       </footer>
     </main>
+  </div>
+
+  <!-- Zoom Phone SMS Messenger Modal -->
+  <div id="zoomSmsModal" style="display:none;position:fixed;inset:0;z-index:9600;background:rgba(3,7,18,0.82);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:14px;">
+    <div style="width:100%;max-width:560px;max-height:90vh;overflow-y:auto;background:#111827;border:1px solid rgba(139,92,246,0.4);border-radius:18px;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,0.65);color:#f8fafc;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <h3 style="margin:0;font-size:17px;font-weight:800;">💬 Zoom Phone SMS Messenger</h3>
+          <div style="font-size:11.5px;color:#94a3b8;margin-top:2px;">Text any 10-digit mobile number or DRC teammate through Zoom • Line: (248) 996-1980</div>
+        </div>
+        <button type="button" class="mini-btn" id="closeZoomModalBtn" style="margin:0;">✕ Close</button>
+      </div>
+
+      <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(148,163,184,0.18);border-radius:12px;padding:13px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px;">
+          <div>
+            <label style="display:block;font-size:11px;color:#94a3b8;margin-bottom:4px;font-weight:700;">Quick Pick DRC Teammate</label>
+            <select id="zoomTeamSelect" class="nda-input" style="width:100%;padding:8px 10px;font-size:12.5px;">
+              <option value="">— Or type any phone # →</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;color:#94a3b8;margin-bottom:4px;font-weight:700;">To Phone # or Name</label>
+            <input id="zoomToInput" class="nda-input" type="text" placeholder="(248) 555-0148 or Jacob" style="width:100%;padding:8px 10px;font-size:12.5px;" />
+          </div>
+        </div>
+        <label style="display:block;font-size:11px;color:#94a3b8;margin-bottom:4px;font-weight:700;">Text Message</label>
+        <textarea id="zoomMsgInput" class="nda-input" rows="3" placeholder="Type your Zoom SMS message here..." style="width:100%;padding:9px 10px;font-size:13px;resize:vertical;"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;flex-wrap:wrap;">
+          <label style="font-size:11.5px;color:#cbd5e1;display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="zoomSigCheck" checked /> Include my callback number (248) 996-1980
+          </label>
+          <button type="button" class="send-btn" id="sendZoomNowBtn" style="padding:8px 16px;font-size:13px;">📲 Send via Zoom</button>
+        </div>
+        <div id="zoomSendStatus" style="margin-top:8px;font-size:12px;"></div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:800;color:#c4b5fd;text-transform:uppercase;letter-spacing:0.04em;">📥 My Recent Zoom Texts ((248) 996-1980)</div>
+        <button type="button" class="mini-btn" id="refreshZoomInboxBtn" style="margin:0;">🔄 Refresh</button>
+      </div>
+      <div id="zoomInboxList" style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;font-size:12.5px;color:#cbd5e1;">
+        <div style="color:#94a3b8;padding:10px;text-align:center;">Click Refresh to load your recent Zoom SMS conversations.</div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -924,9 +973,9 @@
         prompt: 'Check my upcoming assigned appointments and recent activity in DRC CRM.'
       },
       {
-        title: '✍️ Write, Plan, Budget, or Brainstorm Anything',
-        desc: 'Personal planning, emails, workouts, travel itineraries, math, or clean PDF guides',
-        prompt: 'Help me build a 4-day weekend travel itinerary or weekly workout & meal plan and export it as a clean printable PDF.'
+        title: '💬 Send & Check Zoom Texts',
+        desc: 'Text any homeowner, personal contact, or DRC teammate right through Zoom Phone',
+        prompt: 'Check my recent Zoom SMS text messages and show me who texted me last.'
       }
     ];
 
@@ -1195,6 +1244,102 @@
         sendPrompt();
       }
     });
+
+    async function loadZoomDirectory() {
+      try {
+        const res = await apiFetch('/api/rep/zoom/directory');
+        const sel = document.getElementById('zoomTeamSelect');
+        if (!sel || !res.contacts) return;
+        sel.innerHTML = `<option value="">— Pick Teammate or Type # —</option>` + res.contacts.map(c =>
+          `<option value="${esc(c.zoom_phone)}">${esc(c.name)} (${esc(c.display_phone)} • Ext ${esc(c.extension)})</option>`
+        ).join('');
+      } catch (_) {}
+    }
+
+    async function loadZoomInbox() {
+      const box = document.getElementById('zoomInboxList');
+      if (!box) return;
+      box.innerHTML = `<div style="color:#94a3b8;padding:12px;text-align:center;">Loading Zoom SMS threads...</div>`;
+      try {
+        const res = await apiFetch('/api/rep/zoom/inbox?limit=8');
+        const threads = res.threads || [];
+        if (!threads.length) {
+          box.innerHTML = `<div style="color:#94a3b8;padding:12px;text-align:center;">No recent Zoom SMS sessions found.</div>`;
+          return;
+        }
+        box.innerHTML = threads.map(t => {
+          const replyPhone = (t.participants && t.participants[0] && t.participants[0].phone) ? t.participants[0].phone : '';
+          const msgsHtml = (t.messages || []).slice(-3).map(m =>
+            `<div style="margin-top:4px;padding:5px 8px;border-radius:7px;background:${m.direction==='sent'?'rgba(139,92,246,0.18)':'rgba(30,41,59,0.85)'};">
+              <span style="font-size:10.5px;color:#94a3b8;">${esc(m.direction==='sent'?'You':m.from)} • ${esc((m.time||'').replace('T',' ').slice(0,16))}</span>
+              <div style="margin-top:2px;white-space:pre-wrap;">${esc(m.text)}</div>
+            </div>`
+          ).join('');
+          return `<div style="background:rgba(15,23,42,0.75);border:1px solid rgba(148,163,184,0.16);border-radius:10px;padding:9px 11px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <strong style="color:#f8fafc;font-size:12.5px;">${esc(t.with)}</strong>
+              ${replyPhone ? `<button type="button" class="mini-btn primary" style="margin:0;padding:3px 8px;font-size:11px;" onclick="document.getElementById('zoomToInput').value='${esc(replyPhone)}';document.getElementById('zoomMsgInput').focus();">↩ Reply</button>` : ''}
+            </div>
+            ${msgsHtml || '<div style="font-size:11.5px;color:#64748b;margin-top:4px;">No recent text preview</div>'}
+          </div>`;
+        }).join('');
+      } catch (e) {
+        box.innerHTML = `<div style="color:#fca5a5;padding:10px;">${esc(e.message)}</div>`;
+      }
+    }
+
+    function openZoomModal() {
+      closeMobileDrawer();
+      const modal = document.getElementById('zoomSmsModal');
+      modal.style.display = 'flex';
+      document.getElementById('zoomSendStatus').textContent = '';
+      loadZoomDirectory();
+      loadZoomInbox();
+    }
+
+    async function sendZoomFromModal() {
+      const toVal = document.getElementById('zoomToInput').value.trim();
+      const msgVal = document.getElementById('zoomMsgInput').value.trim();
+      const incSig = document.getElementById('zoomSigCheck').checked;
+      const st = document.getElementById('zoomSendStatus');
+      const btn = document.getElementById('sendZoomNowBtn');
+      if (!toVal || !msgVal) {
+        st.style.color = '#fca5a5';
+        st.textContent = 'Enter both a recipient phone/teammate and a message.';
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      st.style.color = '#94a3b8';
+      st.textContent = 'Sending through Zoom Phone...';
+      try {
+        const res = await apiFetch('/api/rep/zoom/send', {
+          method: 'POST',
+          body: JSON.stringify({ to: toVal, message: msgVal, include_signature: incSig, conversation_id: state.activeConvId || '' })
+        });
+        st.style.color = '#6ee7b7';
+        st.textContent = `✅ Delivered via Zoom Phone to ${res.recipient} (${res.to_phone})!`;
+        document.getElementById('zoomMsgInput').value = '';
+        setTimeout(loadZoomInbox, 1500);
+      } catch (e) {
+        st.style.color = '#fca5a5';
+        st.textContent = `❌ ${e.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📲 Send via Zoom';
+      }
+    }
+
+    document.getElementById('sidebarZoomBtn').addEventListener('click', openZoomModal);
+    document.getElementById('topZoomBtn').addEventListener('click', openZoomModal);
+    document.getElementById('closeZoomModalBtn').addEventListener('click', () => {
+      document.getElementById('zoomSmsModal').style.display = 'none';
+    });
+    document.getElementById('zoomTeamSelect').addEventListener('change', e => {
+      if (e.target.value) document.getElementById('zoomToInput').value = e.target.value;
+    });
+    document.getElementById('refreshZoomInboxBtn').addEventListener('click', loadZoomInbox);
+    document.getElementById('sendZoomNowBtn').addEventListener('click', sendZoomFromModal);
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
