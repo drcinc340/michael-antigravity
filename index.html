@@ -397,9 +397,9 @@
   <!-- Lock Screen -->
   <div id="authScreen">
     <div class="auth-card">
-      <div class="brand-orb">DRC</div>
-      <h1>DRC Antigravity</h1>
-      <p>Michael Marinucci Jr. • Sales &amp; Estimating AI<br/>Dinverno Remodeling and Construction</p>
+      <div class="brand-orb">MM</div>
+      <h1>Antigravity AI</h1>
+      <p>Michael Marinucci Jr. • All-Access Personal &amp; DRC Pro AI<br/>Live Web Search • Excel • PDFs • Estimating</p>
       <form id="loginForm">
         <input id="pinField" class="pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off" required />
         <button type="submit" class="btn-primary" id="unlockBtn">Unlock Workspace</button>
@@ -469,17 +469,17 @@
         </div>
       </div>
       <div class="sb-actions">
-        <button class="new-chat-btn" id="newChatBtn">＋ New Consultation Chat</button>
+        <button class="new-chat-btn" id="newChatBtn">＋ New Chat</button>
         <div class="sb-tabs">
           <button class="sb-tab active" data-tab="chats">Chats</button>
           <button class="sb-tab" data-tab="mesh">Adriano <span id="meshBadge" class="badge-dot" style="display:none">0</span></button>
-          <button class="sb-tab" data-tab="pdfs">Proposals</button>
+          <button class="sb-tab" data-tab="pdfs">Files &amp; PDFs</button>
         </div>
       </div>
       <div class="sb-scroll" id="sbContent"></div>
       <div class="sb-foot">
         <a id="myNdaLink" href="#" target="_blank" style="color:#6ee7b7;text-decoration:none;font-weight:700;display:none;" title="Download your signed NDA PDF">⚖️ Signed NDA PDF ↗</a>
-        <span id="sandboxLbl">DRC Sales Sandbox</span>
+        <span id="sandboxLbl">All-Access AI</span>
         <button class="mini-btn" id="lockBtn" style="margin:0;">Lock</button>
       </div>
     </aside>
@@ -488,12 +488,12 @@
       <header class="topbar">
         <div style="display:flex;align-items:center;gap:10px;min-width:0;">
           <button class="menu-toggle" id="menuBtn">☰</button>
-          <div class="topbar-title" id="chatHeaderTitle">DRC Sales &amp; Estimating Assistant</div>
+          <div class="topbar-title" id="chatHeaderTitle">Antigravity All-Access AI</div>
         </div>
         <select id="modelSelect" class="model-select">
-          <option value="gemini-3.5-flash">⚡ Gemini 3.5 Pro-Flash</option>
-          <option value="gemini-flash-lite-latest">🚀 Instant Field Mode</option>
-          <option value="gemini-3.1-flash-lite">⚖️ Gemini 3.1 Balanced</option>
+          <option value="gemini-3-flash-preview">⚡ Gemini 3 Pro-Flash (Web + Excel)</option>
+          <option value="gemini-2.5-flash">🧠 Gemini 2.5 Balanced</option>
+          <option value="gemini-flash-lite-latest">🚀 Instant Fast Mode</option>
         </select>
       </header>
 
@@ -503,9 +503,9 @@
         <div class="composer-inner">
           <div class="pending-files" id="pendingFiles"></div>
           <div class="composer-box">
-            <input type="file" id="filePicker" multiple accept="image/*,.pdf" style="display:none" />
-            <button type="button" class="attach-btn" id="attachBtn" title="Upload Jobsite Photo or Blueprint PDF">📷</button>
-            <textarea id="promptInput" rows="1" placeholder="Ask for a Good/Better/Best PDF quote, upload a jobsite photo, check MI code, or check your DRC CRM..."></textarea>
+            <input type="file" id="filePicker" multiple accept="image/*,.pdf,.csv,.xlsx,.xls,.txt,.md,.json,.docx" style="display:none" />
+            <button type="button" class="attach-btn" id="attachBtn" title="Upload Any Photo, PDF, Spreadsheet, or Blueprint">📎</button>
+            <textarea id="promptInput" rows="1" placeholder="Ask anything — search the live web, build Excel spreadsheets, shop, check stats/odds, analyze photos, or generate DRC Proposal PDFs..."></textarea>
             <button type="button" class="send-btn" id="sendBtn">Send ↑</button>
           </div>
         </div>
@@ -533,10 +533,27 @@
       return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    function artifactUiMeta(a) {
+      const fn = String(a.filename || '').toLowerCase();
+      if (fn.endsWith('.xlsx') || fn.endsWith('.xls')) return { icon: '📊', btn: 'Download Excel (.xlsx) ↗' };
+      if (fn.endsWith('.csv')) return { icon: '📊', btn: 'Download CSV ↗' };
+      if (fn.endsWith('.pdf')) return { icon: '📄', btn: 'Open PDF ↗' };
+      return { icon: '📝', btn: 'Download File ↗' };
+    }
+
     function renderMarkdown(md) {
       let html = esc(md || '');
       html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${code.trim()}</code></pre>`);
       html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:underline;">$1</a>');
+      html = html.replace(/((?:^\|.*\|\s*$\n?){2,})/gm, (tblBlock) => {
+        const lines = tblBlock.trim().split('\n').filter(l => l.trim().startsWith('|'));
+        if (lines.length < 2) return tblBlock;
+        const parseRow = r => r.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+        const hdr = parseRow(lines[0]);
+        const bodyRows = lines.slice(1).filter(l => !/^[\s|:-]+$/.test(l)).map(parseRow);
+        return `<table><thead><tr>${hdr.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${bodyRows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+      });
       html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
       html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
       html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
@@ -861,17 +878,20 @@
         }
         box.innerHTML = html;
       } else {
-        let html = `<div class="section-lbl">Generated Proposals &amp; Scopes</div>`;
+        let html = `<div class="section-lbl">Spreadsheets, PDFs &amp; Proposals</div>`;
         if (!state.artifacts.length) {
-          html += `<div style="padding:14px 6px;color:var(--muted);font-size:12px;text-align:center;">Ask me to build any Good/Better/Best quote and your Proposal PDFs will appear here.</div>`;
+          html += `<div style="padding:14px 6px;color:var(--muted);font-size:12px;text-align:center;">Any Excel (.xlsx) spreadsheets, clean PDFs, or DRC Proposal PDFs you create appear here.</div>`;
         } else {
-          html += state.artifacts.map(a => `
-            <div class="art-card">
-              <h4>📄 ${esc(a.title)}</h4>
-              <p>${esc(a.filename)} (${Math.max(1, Math.round((a.size_bytes||0)/1024))} KB)</p>
-              <a class="mini-btn primary" target="_blank" href="${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}">Download / Print PDF</a>
-            </div>
-          `).join('');
+          html += state.artifacts.map(a => {
+            const meta = artifactUiMeta(a);
+            return `
+              <div class="art-card">
+                <h4>${meta.icon} ${esc(a.title)}</h4>
+                <p>${esc(a.filename)} (${Math.max(1, Math.round((a.size_bytes||0)/1024))} KB)</p>
+                <a class="mini-btn primary" target="_blank" href="${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}">${meta.btn}</a>
+              </div>
+            `;
+          }).join('');
         }
         box.innerHTML = html;
       }
@@ -879,40 +899,40 @@
 
     const QUICK_CARDS = [
       {
-        title: '📋 Good / Better / Best Proposal PDF',
+        title: '🌐 Live Web Search & Shopping',
+        desc: 'Compare products, prices, furniture, electronics, or live sports stats & odds',
+        prompt: 'Search the live web for the best entertainment centers with an electric fireplace under $1,000 right now with retailer links, dimensions, and prices.'
+      },
+      {
+        title: '📊 Build an Excel (.xlsx) Spreadsheet',
+        desc: 'Generate a downloadable, formatted Excel spreadsheet for stats, odds, budgets, or lists',
+        prompt: 'Search the live web for this week\'s top NFL anytime TD scorer odds & player props, and build me a downloadable Excel (.xlsx) spreadsheet of the top 25 players.'
+      },
+      {
+        title: '📋 Good / Better / Best DRC Proposal PDF',
         desc: 'Generate a branded Dinverno Remodeling PDF quote + follow-up text in seconds',
         prompt: 'Build a Good / Better / Best DRC Proposal PDF for homeowner John & Sarah Miller at 14250 Riverside Dr, Livonia, MI 48154 (Phone: 248-555-0148) for 110 linear ft of interior basement waterproofing + 6 bowed wall carbon-fiber straps.'
       },
       {
-        title: '📸 Jobsite Photo & Blueprint Takeoff',
-        desc: 'Attach basement, roof, porch, or plan photos for damage & material quantities',
-        prompt: 'Analyze the attached jobsite photo(s), identify all visible structural/moisture/code issues, estimate quantities, and recommend Good / Better / Best options.'
+        title: '📸 Analyze Any Photo, PDF, or Blueprint',
+        desc: 'Upload any photo, receipt, contract, document, or jobsite picture for instant analysis',
+        prompt: 'Analyze the attached photo/document in detail and give me clear takeaways and next steps.'
       },
       {
-        title: '📐 Michigan Code & BS&A Permit Check',
-        desc: '42" frost footings, 6x6 anchored posts, egress windows, Ice & Water Shield',
-        prompt: 'Give me the Michigan Residential Code requirements and DRC BS&A / Job Box inspection checklist for a 16x20 four-season sunroom addition in Livonia / Canton.'
-      },
-      {
-        title: '📅 My DRC CRM Schedule & Lead Entry',
-        desc: 'Check my assigned appointments in Dinverno OS v2 or log consultation notes',
+        title: '📅 My DRC CRM Schedule & Michigan Code',
+        desc: 'Check my assigned DRC CRM appointments, enter a 5-point lead, or verify MI code',
         prompt: 'Check my upcoming assigned appointments and recent activity in DRC CRM.'
       },
       {
-        title: '📡 Check Tasks from Adriano',
-        desc: 'Pull dispatches from Adriano Vagnini via DRC Agent Mesh & send updates',
-        prompt: 'Check my DRC Agent Mesh inbox for any tasks or leads from Adriano Vagnini.'
-      },
-      {
-        title: '🎯 Overcome Price / "Think About It"',
-        desc: ' DRC consultation closing scripts, draw schedule transparency & warranty framing',
-        prompt: 'Give me a sharp in-home DRC script when a homeowner says another contractor quoted $3,500 less on a roof or waterproofing job.'
+        title: '✍️ Write, Plan, Budget, or Brainstorm Anything',
+        desc: 'Personal planning, emails, workouts, travel itineraries, math, or clean PDF guides',
+        prompt: 'Help me build a 4-day weekend travel itinerary or weekly workout & meal plan and export it as a clean printable PDF.'
       }
     ];
 
     function renderWelcomeOrActiveChat() {
       if (state.activeConvId) return;
-      document.getElementById('chatHeaderTitle').textContent = 'DRC Sales & Estimating Assistant';
+      document.getElementById('chatHeaderTitle').textContent = 'Antigravity All-Access AI';
       const sc = document.getElementById('chatScroll');
       const signedBanner = state.justSignedCert ? `
         <div class="pdf-banner" style="margin-bottom:16px;">
@@ -926,8 +946,8 @@
       sc.innerHTML = `
         <div class="welcome-hero">
           ${signedBanner}
-          <h2>Hey Michael — Ready for Your Next Appointment 👋</h2>
-          <p>Your custom <b>Dinverno Remodeling and Construction</b> AI workspace. Build Good/Better/Best Proposal PDFs, inspect jobsite photos, verify Michigan Residential Code, or sync your DRC CRM leads.</p>
+          <h2>Hey Michael — Use Antigravity for Anything 👋</h2>
+          <p>Your all-access personal &amp; professional AI. Search the live web, build real <b>Excel (.xlsx) spreadsheets</b>, shop &amp; compare prices, track sports/stats, analyze any photo/PDF, or build <b>Dinverno Remodeling and Construction</b> Proposal PDFs.</p>
           <div class="quick-grid">
             ${QUICK_CARDS.map((c, idx) => `
               <button class="quick-card" onclick="useQuickCard(${idx})">
@@ -1005,15 +1025,18 @@
           </details>
         `).join('');
 
-        const arts = (m.artifacts || []).map(a => `
-          <div class="pdf-banner">
-            <div>
-              <strong>📄 ${esc(a.title)}</strong>
-              <span>${esc(a.filename)} • Ready to share or print</span>
+        const arts = (m.artifacts || []).map(a => {
+          const meta = artifactUiMeta(a);
+          return `
+            <div class="pdf-banner">
+              <div>
+                <strong>${meta.icon} ${esc(a.title)}</strong>
+                <span>${esc(a.filename)} • Ready to open or download</span>
+              </div>
+              <a class="dl-btn" target="_blank" href="${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}">${meta.btn}</a>
             </div>
-            <a class="dl-btn" target="_blank" href="${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}">Open PDF ↗</a>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
         return `
           <div class="msg-row ${isUser ? 'user' : 'assistant'}">
