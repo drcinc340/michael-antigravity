@@ -584,6 +584,14 @@
 
     function artifactUiMeta(a) {
       const fn = String(a.filename || '').toLowerCase();
+      const metaObj = a.metadata || {};
+      if (a.kind === 'live_webpage' || fn.endsWith('.html')) {
+        return {
+          icon: '🌐',
+          btn: 'Open Live Website ↗',
+          href: metaObj.live_url || a.live_url || `${state.apiBase}/apps/${encodeURIComponent(a.filename)}`
+        };
+      }
       if (fn.endsWith('.xlsx') || fn.endsWith('.xls')) return { icon: '📊', btn: 'Download Excel (.xlsx) ↗' };
       if (fn.endsWith('.csv')) return { icon: '📊', btn: 'Download CSV ↗' };
       if (fn.endsWith('.pdf')) return { icon: '📄', btn: 'Open PDF ↗' };
@@ -594,6 +602,11 @@
       let html = esc(md || '');
       html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${code.trim()}</code></pre>`);
       html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+      html = html.replace(/\[([^\]]+)\]\((?:sandbox:)?(\/api\/files\/[^\s)]+)\)/g, (_, lbl, p) => {
+        const sep = p.includes('?') ? '&amp;' : '?';
+        return `<a href="${state.apiBase}${p}${sep}pin=${encodeURIComponent(state.pin)}" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:underline;">${lbl}</a>`;
+      });
+      html = html.replace(/\[([^\]]+)\]\((?:sandbox:)?(\/apps\/[^\s)]+)\)/g, (_, lbl, p) => `<a href="${state.apiBase}${p}" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:underline;">${lbl}</a>`);
       html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:underline;">$1</a>');
       html = html.replace(/((?:^\|.*\|\s*$\n?){2,})/gm, (tblBlock) => {
         const lines = tblBlock.trim().split('\n').filter(l => l.trim().startsWith('|'));
@@ -933,11 +946,12 @@
         } else {
           html += state.artifacts.map(a => {
             const meta = artifactUiMeta(a);
+            const href = meta.href || `${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}`;
             return `
               <div class="art-card">
                 <h4>${meta.icon} ${esc(a.title)}</h4>
                 <p>${esc(a.filename)} (${Math.max(1, Math.round((a.size_bytes||0)/1024))} KB)</p>
-                <a class="mini-btn primary" target="_blank" href="${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}">${meta.btn}</a>
+                <a class="mini-btn primary" target="_blank" href="${href}">${meta.btn}</a>
               </div>
             `;
           }).join('');
@@ -1076,13 +1090,14 @@
 
         const arts = (m.artifacts || []).map(a => {
           const meta = artifactUiMeta(a);
+          const href = meta.href || `${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}`;
           return `
             <div class="pdf-banner">
               <div>
                 <strong>${meta.icon} ${esc(a.title)}</strong>
-                <span>${esc(a.filename)} • Ready to open or download</span>
+                <span>${esc(a.filename)} • Ready to open or share</span>
               </div>
-              <a class="dl-btn" target="_blank" href="${state.apiBase}${a.download_url}?pin=${encodeURIComponent(state.pin)}">${meta.btn}</a>
+              <a class="dl-btn" target="_blank" href="${href}">${meta.btn}</a>
             </div>
           `;
         }).join('');
