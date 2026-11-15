@@ -594,6 +594,8 @@
       }
       if (fn.endsWith('.xlsx') || fn.endsWith('.xls')) return { icon: '📊', btn: 'Download Excel (.xlsx) ↗' };
       if (fn.endsWith('.csv')) return { icon: '📊', btn: 'Download CSV ↗' };
+      if (fn.endsWith('.mp4')) return { icon: '🎬', btn: 'Watch / Download MP4 ↗' };
+      if (fn.endsWith('.epub')) return { icon: '📚', btn: 'Download Kindle (.epub) ↗' };
       if (fn.endsWith('.pdf')) return { icon: '📄', btn: 'Open PDF ↗' };
       return { icon: '📝', btn: 'Download File ↗' };
     }
