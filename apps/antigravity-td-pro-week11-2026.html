@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Antigravity TD Pro | Week 11 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --bg: #0b0e14; --card: #161b22; --accent: #3b82f6; --text: #e6edf3; }
+        body { background-color: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+        .glass { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .odds-card { transition: transform 0.2s ease; }
+        .odds-card:active { transform: scale(0.98); }
+        .best-price { color: #4ade80; font-weight: 800; border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 6px; background: rgba(74, 222, 128, 0.1); }
+        .book-label { font-size: 0.65rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; }
+        input::placeholder { color: #484f58; }
+        .team-badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; text-transform: uppercase; }
+        .det { background: #0076b6; color: white; }
+        .tb { background: #d50a0a; color: white; }
+        .kc { background: #e31837; color: white; }
+        .buf { background: #00338d; color: white; }
+        .bal { background: #241773; color: white; }
+        .pit { background: #ffb612; color: black; }
+        .nyj { background: #125740; color: white; }
+        .ne { background: #002244; color: white; }
+    </style>
+</head>
+<body class="pb-20">
+    <div class="sticky top-0 z-50 glass px-4 py-4 mb-4 shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="text-xl font-black tracking-tighter text-white uppercase">ANTIGRAVITY <span class="text-blue-500">TD PRO</span></h1>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Week 11 • Nov 2026 • Live Odds</p>
+            </div>
+            <div class="bg-blue-500/10 border border-blue-500/20 rounded-full px-3 py-1">
+                <span class="text-[10px] font-bold text-blue-400 uppercase">Live Tracking</span>
+            </div>
+        </div>
+        <div class="relative">
+            <input type="text" id="search" placeholder="Search player or team..." 
+                class="w-full bg-[#0d1117] border border-gray-800 rounded-2xl py-3 pl-4 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all">
+        </div>
+    </div>
+
+    <div id="app" class="px-4 space-y-6">
+        <!-- Content injected by JS -->
+    </div>
+
+    <script>
+        const data = [
+            {
+                game: "Lions vs. Buccaneers",
+                players: [
+                    { name: "Amon-Ra St. Brown", team: "DET", pos: "WR", dk: "+115", fd: "+105", hr: "+110", mgm: "+100", best: "dk" },
+                    { name: "Jahmyr Gibbs", team: "DET", pos: "RB", dk: "-140", fd: "-145", hr: "-130", mgm: "-135", best: "hr" },
+                    { name: "David Montgomery", team: "DET", pos: "RB", dk: "-130", fd: "-125", hr: "-135", mgm: "-120", best: "fd" },
+                    { name: "Mike Evans", team: "TB", pos: "WR", dk: "+140", fd: "+150", hr: "+145", mgm: "+140", best: "fd" },
+                    { name: "Rachaad White", team: "TB", pos: "RB", dk: "+120", fd: "+115", hr: "+125", mgm: "+120", best: "hr" }
+                ]
+            },
+            {
+                game: "Chiefs vs. Bills",
+                players: [
+                    { name: "Travis Kelce", team: "KC", pos: "TE", dk: "+105", fd: "+100", hr: "+110", mgm: "+105", best: "hr" },
+                    { name: "Isiah Pacheco", team: "KC", pos: "RB", dk: "-115", fd: "-120", hr: "-110", mgm: "-115", best: "hr" },
+                    { name: "Josh Allen", team: "BUF", pos: "QB", dk: "-105", fd: "-110", hr: "+100", mgm: "-105", best: "hr" },
+                    { name: "James Cook", team: "BUF", pos: "RB", dk: "+110", fd: "+105", hr: "+115", mgm: "+110", best: "hr" }
+                ]
+            },
+            {
+                game: "Ravens vs. Steelers",
+                players: [
+                    { name: "Derrick Henry", team: "BAL", pos: "RB", dk: "-185", fd: "-190", hr: "-175", mgm: "-180", best: "hr" },
+                    { name: "Lamar Jackson", team: "BAL", pos: "QB", dk: "+145", fd: "+140", hr: "+155", mgm: "+150", best: "hr" },
+                    { name: "George Pickens", team: "PIT", pos: "WR", dk: "+165", fd: "+175", hr: "+170", mgm: "+165", best: "fd" }
+                ]
+            },
+            {
+                game: "Jets vs. Patriots (TNF)",
+                players: [
+                    { name: "Breece Hall", team: "NYJ", pos: "RB", dk: "-125", fd: "-130", hr: "-120", mgm: "-125", best: "hr" },
+                    { name: "Garrett Wilson", team: "NYJ", pos: "WR", dk: "+135", fd: "+130", hr: "+145", mgm: "+140", best: "hr" },
+                    { name: "Rhamondre Stevenson", team: "NE", pos: "RB", dk: "+115", fd: "+110", hr: "+120", mgm: "+115", best: "hr" }
+                ]
+            }
+        ];
+
+        function render(filter = "") {
+            const app = document.getElementById('app');
+            app.innerHTML = '';
+            
+            const filtered = data.filter(g => 
+                g.game.toLowerCase().includes(filter.toLowerCase()) || 
+                g.players.some(p => p.name.toLowerCase().includes(filter.toLowerCase()))
+            );
+
+            filtered.forEach(g => {
+                const section = document.createElement('div');
+                section.className = 'mb-8';
+                section.innerHTML = `<h2 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">${g.game}</h2>`;
+                
+                const grid = document.createElement('div');
+                grid.className = 'space-y-3';
+
+                g.players.forEach(p => {
+                    if (filter && !p.name.toLowerCase().includes(filter.toLowerCase()) && !g.game.toLowerCase().includes(filter.toLowerCase())) return;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'odds-card bg-[#161b22] rounded-2xl p-4 border border-gray-800 shadow-sm';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-bold text-white text-base">${p.name}</h3>
+                                <div class="flex gap-2 mt-1">
+                                    <span class="team-badge ${p.team.toLowerCase()}">${p.team}</span>
+                                    <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full font-bold">${p.pos}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="text-center ${p.best === 'dk' ? 'best-price' : ''} py-2">
+                                <p class="book-label">DK</p>
+                                <p class="text-sm font-bold">${p.dk}</p>
+                            </div>
+                            <div class="text-center ${p.best === 'fd' ? 'best-price' : ''} py-2">
+                                <p class="book-label">FD</p>
+                                <p class="text-sm font-bold">${p.fd}</p>
+                            </div>
+                            <div class="text-center ${p.best === 'hr' ? 'best-price' : ''} py-2">
+                                <p class="book-label">HR</p>
+                                <p class="text-sm font-bold">${p.hr}</p>
+                            </div>
+                            <div class="text-center ${p.best === 'mgm' ? 'best-price' : ''} py-2">
+                                <p class="book-label">MGM</p>
+                                <p class="text-sm font-bold">${p.mgm}</p>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                section.appendChild(grid);
+                app.appendChild(section);
+            });
+        }
+
+        document.getElementById('search').addEventListener('input', (e) => render(e.target.value));
+        render();
+    </script>
+</body>
+</html>
