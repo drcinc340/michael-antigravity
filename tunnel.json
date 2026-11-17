@@ -1,1 +1,28 @@
-{"v":2,"locked":true,"status":"offline"}
+{
+  "v": 2,
+  "rep_slot": {
+    "v": 1,
+    "iter": 100000,
+    "salt": "q1O7lGKRQxn9YhE10nNBGA==",
+    "iv": "rEW5B02FC6PKTy+W",
+    "ct": "ceqh3A1CM/QBDNxowq0YrLQGSKUsL/TaOgvLS76NDo9e5rxDU+yEzt5OExZ9VtpyIwQ7ivYU02IHxtkMuCmgOnDvLASeZhGF+3RcfpagNDBgx2VkrnNp3fJ4ltzM+nliizHLQSRgQW8Bf80OCkO7nALtKwJXA2VdDlb96xJrSSxoQEgyYT5pQ7XShtNeRUViiciriHgSk7a5HzohmJ/SCumG874ERg==",
+    "updatedAt": "2026-11-17T15:58:14.384Z"
+  },
+  "overseer_slot": {
+    "v": 1,
+    "iter": 100000,
+    "salt": "OYWe1w0yQ0gQ5FTJIkwp8A==",
+    "iv": "XmZCuQCtJ1VI0ecc",
+    "ct": "IZal6pGgddYb332uGT59DuscW/8IIG0u+ZYp7TK9qOKENoTmtBi2GTKjz4t/OABtzi0gTBO2gaGh20KNlU3fDmQK+8MiQqcUxM+ac1p+xhZHTKEFF/qBS+D+rZzG1MHRKCssjYIAZGBWhTFjLT1/Tzj01uae3ida70xVlBXQdU4lo8F1gjD8Ma5DVfkCnbgWxYD0ETbw8DD3wYniA8NWvu53asnkww==",
+    "updatedAt": "2026-11-17T15:58:14.396Z"
+  },
+  "apps_public_slot": {
+    "v": 1,
+    "iter": 100000,
+    "salt": "KhD9UYrUJji3eZlDUMiAuw==",
+    "iv": "YOJY4fhshsgUCd3X",
+    "ct": "99NEevEgD2QGAr7ofHk0cN4HYn1wT5WIUXtLx0ZFs8xGYEEKAMWq3dtoXm3KAsXKfyz457ZsJkyPlMaXe6Qc4ym0tqyb3nsWrQxSxkTjFzays7fNXCwADUViMBOJmMviCVhr85v0lCBiefIht6OZCfoU2/N4+n/Q8nChhwig0g==",
+    "updatedAt": "2026-11-17T15:58:14.406Z"
+  },
+  "updatedAt": "2026-11-17T15:58:14.406Z"
+}
